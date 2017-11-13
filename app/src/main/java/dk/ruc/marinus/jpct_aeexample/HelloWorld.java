@@ -1,4 +1,6 @@
 package dk.ruc.marinus.jpct_aeexample;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.Random;
 
@@ -13,13 +15,16 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.constraint.ConstraintLayout;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 
 import com.threed.jpct.Camera;
 import com.threed.jpct.FrameBuffer;
 import com.threed.jpct.Light;
+import com.threed.jpct.Loader;
 import com.threed.jpct.Logger;
 import com.threed.jpct.Object3D;
 import com.threed.jpct.Primitives;
@@ -60,6 +65,7 @@ public class HelloWorld extends Activity {
     public Texture texture;
 
     float startX, startY;
+    private Object3D android;
 
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -77,7 +83,18 @@ public class HelloWorld extends Activity {
 
         renderer = new MyRenderer();
         mGLView.setRenderer(renderer);
-        setContentView(mGLView);
+        ConstraintLayout cl = new ConstraintLayout(this);
+        cl.addView(mGLView);
+        Button button = new Button(this);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                renderer.addAndroid();
+                view.setClickable(false);
+            }
+        });
+        cl.addView(button);
+        setContentView(cl);
     }
 
     @Override
@@ -184,6 +201,8 @@ public class HelloWorld extends Activity {
                 obj.translate(0, 0, 4);
                 obj.setTexture("texture");
                 obj.build();
+
+
 /*
                 obj2 = Primitives.getSphere(32, 3f);
                 world.addObject(obj2);
@@ -229,6 +248,19 @@ public class HelloWorld extends Activity {
                 time = System.currentTimeMillis();
             }
             fps++;
+        }
+
+        public void addAndroid(){
+            try {
+                InputStream is = getResources().getAssets().open("android.3ds");
+                Object3D[] model = Loader.load3DS(is, 3);
+                android = Object3D.mergeAll(model);
+                android.build();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            android.rotateX((float) (-Math.PI/2));
+            world.addObject(android);
         }
     }
 
